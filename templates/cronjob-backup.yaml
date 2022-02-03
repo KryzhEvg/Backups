@@ -1,0 +1,29 @@
+{{- $release_name := .Release.Name }}
+{{- range $job := .Values.jobs }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $job.name }}
+  namespace: {{ $.Values.cronjobNamespace }}
+spec:
+  schedule: {{ $job.schedule | quote }}
+  startingDeadlineSeconds: {{ $job.startingDeadlineSeconds }}
+  successfulJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: {{ $release_name }}
+            cron: {{ $job.name }}
+          annotations: {{ $job.annotations | nindent 12 }}
+        spec:
+          restartPolicy: {{ $job.restartPolicy }}
+          serviceAccountName: {{ $job.serviceAccountName }}
+          containers:
+          - image: "{{ $job.image.name }}:{{ $job.image.tag }}"
+            name: {{ $job.name }}
+            imagePullPolicy: {{ $job.image.imagePullPolicy }}
+            command: [ "/bin/bash", "-c", "sleep 1000" ]
+{{- end }}

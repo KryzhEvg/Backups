@@ -1,0 +1,26 @@
+cronjobNamespace: "test-backup"
+
+jobs:
+  - name: mysql
+    image:
+      name: kryzha/no_cache
+      tag: v5
+      pullPolicy: Always
+    schedule: "*/1 * * * *"
+    restartPolicy: OnFailure
+    startingDeadlineSeconds: 30
+    annotations: "vault.security.banzaicloud.io/vault-env-from-path: backups/data/CAT-BP-testing/mysql"
+    serviceAccountName: bakup-sa
+    namespace: test-backup
+
+  - name: postgres
+    image:
+      name: kryzha/no_cache
+      tag: v5
+      pullPolicy: Always
+    schedule: "*/1 * * * *"
+    restartPolicy: OnFailure
+    startingDeadlineSeconds: 30
+    annotations: "vault.security.banzaicloud.io/vault-env-from-path: backups/data/CAT-BP-testing/postgres"
+    serviceAccountName: bakup-sa
+    namespace: test-backup

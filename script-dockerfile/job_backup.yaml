@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backup-job
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: backup-image
+        image: kryzha/backup_image:v9
+        env:
+          - name: BACKUP_TYPE
+            value: "POSTGRES"
+          - name: MYSQL_PWD
+            value: "admin"
+          - name: MYSQL_USER
+            value: "root"
+          - name: HOST
+            value: "ab6e239a2877c42269acb2b790f7b524-1572797972.eu-west-1.elb.amazonaws.com"
+          - name: PGUSER
+            value: "postgres"
+          - name: PGDATABASE
+            value: "test"
+          - name: PGPASSWORD
+            value: "admin"
+          - name: DB_NAME
+            value: "test"
+          - name: SLACK_URL
+            value: "https://hooks.slack.com/services/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"
+          - name: PORT
+            value: "5432"
+          - name: BACKUP_STORAGE_URL
+            value: "s3://test-backups-20211214"
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+          readOnly: true
+      volumes:
+      - name: scripts
+        configMap:
+          name: backup-configmap
+          defaultMode: 0555
